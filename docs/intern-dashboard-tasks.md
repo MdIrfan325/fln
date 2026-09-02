@@ -12,7 +12,7 @@ This document outlines **four modular, intern-ready frontend tasks** that improv
 Provide a human-in-the-loop side-over drawer allowing teachers and volunteers to manually verify or correct OCR-evaluated student responses.
 
 ### Background & Context
-When assessment sheets are scanned and processed via TrOCR / Vision pipelines, borderline confidence scores or messy handwriting need teacher review before final marks are saved. The backend already supports evaluation overrides via `PATCH /api/evaluation/:reportId/override`.
+When assessment sheets are scanned and processed via TrOCR / Vision pipelines, borderline confidence scores or messy handwriting need teacher review before final marks are saved. The backend already supports evaluation overrides via `PATCH /api/evaluation/:reportId/override` (request body uses a `corrections` array keyed by `questionId`).
 
 ### Implementation Scope
 - **File to Create**: `frontend/src/components/evaluation/OcrCorrectionDrawer.tsx`
