@@ -44,8 +44,8 @@ The FLN platform operates as a cohesive, role-based diagnostic and remediation e
 ## 3. Current State of the Repository — What Has Been Done So Far
 
 The repository is structured as an **npm-workspaces monorepo** consisting of:
-- **`frontend/`**: React 18 single-page application built with TypeScript, Tailwind CSS, Lucide icons, and Vite.
-- **`backend/`**: Node.js and Express.js REST API with MongoDB (Mongoose) persistence and role-based JWT authentication.
+- **`frontend/`**: React 19 single-page application built with TypeScript, Tailwind CSS, Lucide icons, and Vite.
+- **`backend/`**: Node.js and Express.js REST API with optional MongoDB (mongodb driver) and local JSON-file fallback persistence, plus role-based JWT authentication.
 - **`ai-services/`**: Python pipeline for TrOCR character recognition, OpenCV perspective correction, and LLM-assisted diagnostic evaluation.
 
 ### Implemented Features
