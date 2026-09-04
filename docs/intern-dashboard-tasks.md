@@ -20,14 +20,18 @@ When assessment sheets are scanned and processed via TrOCR / Vision pipelines, b
   1. Cropped student handwriting image.
   2. Recognized OCR text vs Expected Answer from the question bank.
   3. Confidence indicator badge (High: Green, Medium: Amber, Low: Red).
-  4. Quick action buttons: **Mark Correct** (Full marks), **Mark Partial**, **Mark Incorrect** (0 marks).
-  5. Teacher comment / note field (optional).
+  4. Quick action buttons: **Mark Correct** (`isCorrect: true`), **Mark Incorrect** (`isCorrect: false`).
+  5. Corrected answer input field (optional `correctedAnswer` string to fix OCR transcription errors).
 - **API Call**: `PATCH /api/evaluation/:reportId/override`
   ```json
   {
-    "questionIndex": 0,
-    "overrideScore": 1,
-    "teacherFeedback": "Correct digits, handwritten stroke clarified"
+    "corrections": [
+      {
+        "questionId": "q_101",
+        "isCorrect": true,
+        "correctedAnswer": "42"
+      }
+    ]
   }
   ```
 
@@ -103,14 +107,14 @@ The dashboard navigation headers feature "Tickets" and "Logbook" action buttons 
   - `frontend/src/components/Layout.tsx`
   - `frontend/src/components/tickets/TicketModal.tsx`
 - **Features**:
-  1. View list of open tickets filed by the user.
-  2. Create a new support ticket (Subject, Priority: Low/Med/High, Description).
-  3. Submit to `POST /api/tickets`.
+  1. View list of support/feedback tickets filed by the user (`GET /api/tickets`).
+  2. Create a new support or curriculum feedback ticket (`type`: `'general'` | `'curriculum'`, `subject`, `description`).
+  3. Submit to `POST /api/tickets/create`.
 
 ### Acceptance Criteria
 - [ ] Clicking the Ticket icon in the navbar opens the `TicketModal`.
 - [ ] Users can submit new tickets with validation and receive instant feedback.
-- [ ] Existing tickets render with appropriate status/priority badges.
+- [ ] Existing tickets render with appropriate status badges (`Open` / `Resolved`) and feedback type.
 
 ---
 
