@@ -54,7 +54,7 @@ The repository is structured as an **npm-workspaces monorepo** consisting of:
 3. **Paper Generation Engine**: Template-backed HTML/Puppeteer pipeline producing A4 printable worksheets equipped with QR identifiers, fiducial markers, and structured ROI bounding boxes.
 4. **Evaluation & Verification Subsystem**: Multi-stage evaluation supporting rule-based scoring, OCR extraction, teacher override endpoints, and volunteer review drawers.
 5. **Analytics & Role Dashboards**: Visual metrics tracking mastery transitions, regional performance dashboards, class-level aggregate metrics, and certification distances.
-6. **Codebase Modularization**: Frontend services communicate directly with the Express backend via `apiFetch()` (`frontend/src/services/apiClient.ts`), with ongoing modularization decomposing monolithic route files into dedicated Express route controllers (`backend/src/routes/*.ts`) and native MongoDB aggregation pipelines.
+6. **Codebase Modularization & API Layer**: The frontend communicates directly with the Express backend via `apiFetch()` (`frontend/src/services/apiClient.ts`) rather than any client-side mock interceptor. The backend operates on a flexible persistence model: it uses the native MongoDB driver when `MONGODB_URI` is configured, or automatically falls back to a local JSON database (`backend/data/db.json`) for zero-dependency local development, with route handlers organized into modular Express controllers (`backend/src/routes/*.ts`).
 
 ---
 
@@ -62,7 +62,7 @@ The repository is structured as an **npm-workspaces monorepo** consisting of:
 
 | # | File & Location | Gap / Issue | Impact & Risk |
 |---|---|---|---|
-| 1 | `ARCHITECTURE.md` (Lines 1–100) & `AUDIT.md` | Documentation still describes an app running on a client-side `localStorage` mock backend, whereas the real Express + MongoDB backend is now standard. | Misleads new contributors into making assumptions about mock data layers rather than building on the real API. |
+| 1 | `ARCHITECTURE.md` (Lines 1–100) & `AUDIT.md` | Documentation still describes an app running on a client-side `localStorage` mock backend, whereas the real Express backend supporting dual persistence (MongoDB when configured, local JSON file DB fallback) is now standard. | Misleads new contributors into making assumptions about mock data layers rather than building on the real API. |
 | 2 | `frontend/src/components/RoleDashboards.tsx` | Legacy god-file contains monolithic dashboard orchestration code, with role-specific views and subpanels undergoing separation into `frontend/src/components/dashboards/` and `panels/`. | Decreases maintainability, causes merge conflicts, and slows down component testing. |
 | 3 | `backend/src/routes/evaluation.ts` (Override Route) | The evaluation override endpoint (`PATCH /api/evaluation/:reportId/override`) updates test scores but does not recalculate downstream misconception fingerprints. | Results in inconsistent student mastery state and incorrect remedial worksheet recommendations. |
 | 4 | `backend/src/routes/students.ts` & Schemas | Student Aadhaar identification lacks server-side field-level encryption and secure step-up detokenization before reaching storage. | Privacy compliance risk regarding student PII protection. |
@@ -86,7 +86,7 @@ The repository is structured as an **npm-workspaces monorepo** consisting of:
 ### Idea 3: Audit & Re-scope Dashboard Issues into Modular Intern Tasks
 - **What**: Conduct a codebase inspection of issues #36–#44 to verify what has been implemented and re-scope outstanding dashboard requirements into independent tasks.
 - **Why**: Provides a clear roadmap for new open-source contributors and interns without conflicting with core architectural refactors.
-- **How**: Audit existing controller endpoints, Mongoose models, and React dashboard components, document findings, and update GitHub tracking issues.
+- **How**: Audit existing controller endpoints, database models/dbStore collections, and React dashboard components, document findings, and update GitHub tracking issues.
 
 ---
 
@@ -98,7 +98,7 @@ For this onboarding contribution, I tackled **[Issue #341](https://github.com/vi
 
 | Issue/PR # | Title | Author | Status in Git | Codebase Audit Findings & Verification | Action Recommended |
 |---|---|---|---|---|---|
-| **#36** | `feat: student registration, management, and bulk upload with role-based access` | `yvarsha-crypto` | Closed (Unmerged) | **Verified Implemented**: Student document structure in `backend/src/db.ts`, role-scoped endpoints (`/api/students`, `/api/students/bulk-import` in `backend/src/routes/students.ts`), and frontend student roster/upload workflows (`StudentListPanel.tsx`, `BaselineUpload.tsx`, `BulkDiagnosticWorkflow.tsx`) are live in the current codebase. | **Closed / Settled**: Superseded by subsequent merged student modules. |
+| **#36** | `feat: student registration, management, and bulk upload with role-based access` | `yvarsha-crypto` | Closed (Unmerged) | **Verified Implemented**: Student document structure in `backend/src/db.ts`, role-scoped endpoints (`/api/students`, `/api/students/bulk-import` in `backend/src/routes/students.ts`) without Mongoose, and frontend student roster and diagnostic/bulk-import UI in `StudentListPanel.tsx` and `DiagnosticTestPanel.tsx` are live in the current codebase. | **Closed / Settled**: Superseded by subsequent merged student modules. |
 | **#37** | `feat: added database-backed SmartFLN paper generation and real TrOCR scanning pipeline` | `RahulPrsad` | Closed (Unmerged) | **Verified Implemented**: Core database paper generation and Python OCR service were merged into main development branch. | **Closed / Settled**: Superseded by PR #38 / active pipelines. |
 | **#38** | `feat: implement end-to-end SmartFLN QR paper generation, ROI cropping, and TrOCR evaluation pipeline` | `RahulPrsad` | Open (PR) | **In Progress**: Full fiducial marker detection, perspective correction, and volunteer review queue. Requires 5GB storage for local TrOCR weights. | **Keep Open / Core Review**: Awaits final V0.1 release integration testing. |
 | **#39** | `Update CHANGE_LOG.md and remove audit.md` | `AmanMehta22` | Closed (Unmerged) | **Verified Implemented**: Restructure from flat `mvp/` layout to `frontend/`, `backend/`, `ai-services/` monorepo is documented in `CHANGELOG.md`. | **Closed**: Structural changes already live. |
