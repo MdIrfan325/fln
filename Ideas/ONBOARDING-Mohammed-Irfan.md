@@ -54,7 +54,7 @@ The repository is structured as an **npm-workspaces monorepo** consisting of:
 3. **Paper Generation Engine**: Template-backed HTML/Puppeteer pipeline producing A4 printable worksheets equipped with QR identifiers, fiducial markers, and structured ROI bounding boxes.
 4. **Evaluation & Verification Subsystem**: Multi-stage evaluation supporting rule-based scoring, OCR extraction, teacher override endpoints, and volunteer review drawers.
 5. **Analytics & Role Dashboards**: Visual metrics tracking mastery transitions, regional performance dashboards, class-level aggregate metrics, and certification distances.
-6. **Codebase Modularization**: Ongoing migration away from the legacy browser-side `localStorage` mock interceptor towards clean, modular Express controller routes and real MongoDB aggregation pipelines.
+6. **Codebase Modularization**: Frontend services communicate directly with the Express backend via `apiFetch()` (`frontend/src/services/apiClient.ts`), with ongoing modularization decomposing monolithic route files into dedicated Express route controllers (`backend/src/routes/*.ts`) and native MongoDB aggregation pipelines.
 
 ---
 
@@ -63,10 +63,10 @@ The repository is structured as an **npm-workspaces monorepo** consisting of:
 | # | File & Location | Gap / Issue | Impact & Risk |
 |---|---|---|---|
 | 1 | `ARCHITECTURE.md` (Lines 1–100) & `AUDIT.md` | Documentation still describes an app running on a client-side `localStorage` mock backend, whereas the real Express + MongoDB backend is now standard. | Misleads new contributors into making assumptions about mock data layers rather than building on the real API. |
-| 2 | `frontend/src/views/RoleDashboards.tsx` | Legacy god-file contains thousands of lines of monolithic dashboard code, with remaining dashboard components requiring separation. | Decreases maintainability, causes merge conflicts, and slows down component testing. |
+| 2 | `frontend/src/components/RoleDashboards.tsx` | Legacy god-file contains monolithic dashboard orchestration code, with role-specific views and subpanels undergoing separation into `frontend/src/components/dashboards/` and `panels/`. | Decreases maintainability, causes merge conflicts, and slows down component testing. |
 | 3 | `backend/src/routes/evaluation.ts` (Override Route) | The evaluation override endpoint (`PATCH /api/evaluation/:reportId/override`) updates test scores but does not recalculate downstream misconception fingerprints. | Results in inconsistent student mastery state and incorrect remedial worksheet recommendations. |
 | 4 | `backend/src/routes/students.ts` & Schemas | Student Aadhaar identification lacks server-side field-level encryption and secure step-up detokenization before reaching storage. | Privacy compliance risk regarding student PII protection. |
-| 5 | `backend/src/generators/` | Multiple question generators lack deterministic exclusion filters against repeated identical questions in a single assessment paper. | Risk of duplicate question generation on personalized student assessment sheets. |
+| 5 | `backend/src/levelGenerator.ts` & `frontend/public/worksheets/levels_main.html` | Multiple question generators lack deterministic exclusion filters against repeated identical questions in a single assessment paper. | Risk of duplicate question generation on personalized student assessment sheets. |
 | 6 | Past Pull Requests & Issues #36–#44 | Several legacy issues (#36 through #44) were partially merged or made redundant by subsequent backend refactors without being formally audited and closed. | Clutters issue tracker and obscures actual pending intern work. |
 
 ---
@@ -98,7 +98,7 @@ For this onboarding contribution, I tackled **[Issue #341](https://github.com/vi
 
 | Issue/PR # | Title | Author | Status in Git | Codebase Audit Findings & Verification | Action Recommended |
 |---|---|---|---|---|---|
-| **#36** | `feat: student registration, management, and bulk upload with role-based access` | `yvarsha-crypto` | Closed (Unmerged) | **Verified Implemented**: Student Mongoose schemas, role-scoped routes (`/api/v2/students`), bulk XLSX parsing, and frontend views (`RegisterStudentView`, `BulkUploadView`) are fully functional in current `backend/` and `frontend/`. | **Closed / Settled**: Superseded by subsequent merged student modules. |
+| **#36** | `feat: student registration, management, and bulk upload with role-based access` | `yvarsha-crypto` | Closed (Unmerged) | **Verified Implemented**: Student document structure in `backend/src/db.ts`, role-scoped endpoints (`/api/students`, `/api/students/bulk-import` in `backend/src/routes/students.ts`), and frontend student roster/upload workflows (`StudentListPanel.tsx`, `BaselineUpload.tsx`, `BulkDiagnosticWorkflow.tsx`) are live in the current codebase. | **Closed / Settled**: Superseded by subsequent merged student modules. |
 | **#37** | `feat: added database-backed SmartFLN paper generation and real TrOCR scanning pipeline` | `RahulPrsad` | Closed (Unmerged) | **Verified Implemented**: Core database paper generation and Python OCR service were merged into main development branch. | **Closed / Settled**: Superseded by PR #38 / active pipelines. |
 | **#38** | `feat: implement end-to-end SmartFLN QR paper generation, ROI cropping, and TrOCR evaluation pipeline` | `RahulPrsad` | Open (PR) | **In Progress**: Full fiducial marker detection, perspective correction, and volunteer review queue. Requires 5GB storage for local TrOCR weights. | **Keep Open / Core Review**: Awaits final V0.1 release integration testing. |
 | **#39** | `Update CHANGE_LOG.md and remove audit.md` | `AmanMehta22` | Closed (Unmerged) | **Verified Implemented**: Restructure from flat `mvp/` layout to `frontend/`, `backend/`, `ai-services/` monorepo is documented in `CHANGELOG.md`. | **Closed**: Structural changes already live. |
