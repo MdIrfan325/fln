@@ -47,7 +47,7 @@ flowchart TB
 
     subgraph Persistence["💾 Persistence Layer (Dual Mode)"]
         MongoDB[("MongoDB Atlas / Local Mongo<br/>Native MongoClient driver<br/>(when MONGODB_URI is set)")]
-        LocalJSON[("Local JSON Database<br/>backend/data/db.json<br/>(zero-config fallback)")]
+        LocalJSON[("Local JSON Database<br/>data/db.json<br/>(zero-config fallback)")]
         DBStore -->|"MONGODB_URI present"| MongoDB
         DBStore -->|"MONGODB_URI unset"| LocalJSON
     end
@@ -80,9 +80,9 @@ flowchart TB
 
 ### Key Architectural Invariants
 1. **Single Source of Truth**: The client-side mock backend and browser interceptors are deleted. All state transitions, scoring, and role permissions originate on the server.
-2. **Base-Path Aware Routing**: All client network requests pass through `apiFetch()` (`frontend/src/services/apiClient.ts`), wrapping Vite's `withBase()` helper so the application deploys seamlessly at root domain or behind reverse-proxy subpaths (e.g., `/fln`).
+2. **Base-Path Aware Routing**: All client network requests pass through `apiFetch()` (`frontend/src/services/apiClient.ts`), which uses the application's local `withBase()` helper (wrapping Vite's configured `import.meta.env.BASE_URL`) so the application deploys seamlessly at root domain or behind reverse-proxy subpaths (e.g., `/fln`).
 3. **Modular Domain Routes**: Per [ADR 001](docs/adr/001-backend-structure.md), routes live in `backend/src/routes/<domain>.ts` exporting `register<Domain>Routes(app)` functions registered centrally in `backend/src/index.ts`.
-4. **Flexible Dual Persistence**: Database operations go through `dbStore` in `backend/src/db.ts`. If `MONGODB_URI` is provided, it connects to MongoDB via the official `mongodb` native driver; otherwise, it operates against `backend/data/db.json` without requiring external database dependencies.
+4. **Flexible Dual Persistence**: Database operations go through `dbStore` in `backend/src/db.ts`. If `MONGODB_URI` is provided, it connects to MongoDB via the official `mongodb` native driver; otherwise, it operates against `data/db.json` (at repo root) without requiring external database dependencies.
 5. **Server-Authoritative Authentication**: JSON Web Tokens (JWT) are cryptographically signed using a server-side secret (`JWT_SECRET`). Role-based access control (`getAuthUser`, `canAccessStudent`, `requireSuperadmin`) is strictly validated on each request.
 6. **Isolated AI & Optical Services**: Heavy computer vision (OpenCV) and machine learning (TrOCR) pipelines run out-of-process in Python (`ai-services/`), preserving the responsiveness of the Node.js API event loop.
 
@@ -173,8 +173,9 @@ fln/
 │   │   ├── db.ts              # dbStore data access layer (native MongoDB + local db.json fallback)
 │   │   ├── paperGenerator.ts  # Puppeteer PDF compiler with fiducial coordinates
 │   │   └── gemini.ts          # Gemini API integration and answer matching
-│   └── data/
-│       └── db.json            # Local file-based database store
+├── data/                      # Local JSON persistence & question bank (repo root)
+│   ├── db.json                # Local file-based database store (zero-config fallback)
+│   └── questionBank.json      # Canonical questions repository
 ├── ai-services/               # Python Evaluation & OCR Pipeline
 │   ├── scripts/               # pdf_rasterize.py, ICR extraction, and scoring scripts
 │   └── personalized_evaluation/ # Class-level exam templates and response models
