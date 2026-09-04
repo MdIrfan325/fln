@@ -70,11 +70,11 @@ Currently, several dashboard metrics and tables flicker or render blank cards wh
 Maintain selected School, Class, and Section filter state in browser memory so teachers do not lose their place when navigating into a student profile and returning.
 
 ### Background & Context
-When managing rosters in `RegisteredStudentsView`, drilling into a student's assessment report and pressing the browser or app "Back" button resets all dropdowns to default values.
+When managing rosters in `StudentListPanel`, drilling into a student's assessment report and pressing the browser or app "Back" button resets all dropdowns to default values.
 
 ### Implementation Scope
 - **Files to Update**:
-  - `frontend/src/views/RegisteredStudentsView.tsx`
+  - `frontend/src/components/panels/StudentListPanel.tsx`
   - `frontend/src/components/dashboards/TeacherDashboard.tsx`
 - **Mechanism**:
   - Save active filter state (`selectedSchool`, `selectedClass`, `selectedSection`) to `sessionStorage` on change:
